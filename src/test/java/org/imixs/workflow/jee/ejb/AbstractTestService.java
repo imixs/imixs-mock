@@ -1,5 +1,7 @@
 package org.imixs.workflow.jee.ejb;
 
+import java.io.File;
+import java.net.URL;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -12,10 +14,7 @@ import javax.persistence.Persistence;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import com.sun.appserv.security.ProgrammaticLogin;
 
@@ -44,7 +43,7 @@ public class AbstractTestService {
 	static String MODELSERVICE_JNDI_NAME = "java:global/imixs-jsf-example-3.2.0-SNAPSHOT/ModelService!org.imixs.workflow.jee.ejb.ModelServiceRemote";
 	static String WORKFLOWSERVICE_JNDI_NAME = "java:global/imixs-jsf-example-3.2.0-SNAPSHOT/WorkflowService!org.imixs.workflow.jee.ejb.WorkflowServiceRemote";
 
-	static String AUTH_CONF_PATH = "~/eclipse_44/imixs-workflow/imixs-workflow-test/src/test/resources/auth.conf";
+	static String AUTH_CONF_PATH = "";
 
 	List<String> removeList = null; // uniqueids to be removed after a
 											// test
@@ -52,6 +51,13 @@ public class AbstractTestService {
 	@Before
 	public void setup() {
 
+		// compute auth_conf_path....
+		URL url = this.getClass().getResource("/auth.conf");
+		File authConfFile = new File(url.getFile());
+		
+		AUTH_CONF_PATH=authConfFile.getAbsolutePath();
+		
+		
 		try {
 
 			// setup programmatic login for GlassFish 3

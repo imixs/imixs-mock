@@ -4,7 +4,7 @@
 	<groupId>org.imixs.workflow</groupId>
 	<artifactId>imixs-workflow-test</artifactId>
 	<version>3.1.5-SNAPSHOT</version>
-	<name>Imixs Workflow Test</name>
+	<name>Imixs-Workflow Integrationtest</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

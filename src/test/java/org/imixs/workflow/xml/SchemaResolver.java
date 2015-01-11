@@ -19,7 +19,7 @@ import javax.xml.transform.stream.StreamResult;
  */
 public class SchemaResolver  extends SchemaOutputResolver {
 	    public Result createOutput( String namespaceUri, String suggestedFileName ) throws IOException {
-	        return new StreamResult(new File("/home/rsoika/Desktop","schema.xsd"));
+	        return new StreamResult(new File("~/","schema.xsd"));
 	    }
 	
 

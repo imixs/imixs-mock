@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:item xmlns:ns2="org.imixs.workflow.xml">
+	<name>txtTitle</name>
+	<value xsi:type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Hello world</value>
+	<value xsi:type="xs:string" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">Hugo</value>
+	<value xsi:type="xs:boolean" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">true</value>
+</ns2:item>

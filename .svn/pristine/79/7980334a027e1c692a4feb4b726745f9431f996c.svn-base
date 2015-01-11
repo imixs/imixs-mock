@@ -1,0 +1,72 @@
+package org.imixs.workflow.jee.ejb;
+
+import java.util.Collection;
+
+import javax.naming.InitialContext;
+
+import org.imixs.workflow.ItemCollection;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+  
+import com.sun.appserv.security.ProgrammaticLogin;
+
+/**
+ * Test class for ModelService
+ * 
+ * @author rsoika
+ *  
+ */
+public class TestModelService {
+	ModelServiceRemote modelService = null;
+
+	@Before
+	public void setup() {
+
+		try {
+			// set jndi name 
+			String ejbName = "java:global/imixs-workflow-web-sample-0.0.5-SNAPSHOT/ModelService!org.imixs.workflow.jee.ejb.ModelServiceRemote";
+ 
+			// setup programmatic login for GlassFish 3
+			System.setProperty(
+					"java.security.auth.login.config",
+					"/home/rsoika/eclipse_37/imixs-workflow/imixs-workflow-test/src/test/resources/auth.conf");
+			ProgrammaticLogin programmaticLogin = new ProgrammaticLogin();
+			// set password
+			programmaticLogin.login("Anna", "anna".toCharArray());
+			// programmaticLogin.l
+
+			InitialContext ic = new InitialContext();
+			modelService = (ModelServiceRemote) ic.lookup(ejbName);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			modelService = null;
+		}
+	}
+
+	@Test
+	@Category(org.imixs.workflow.jee.ejb.EntityServiceRemote.class)
+	public void testService() {
+
+		Assert.assertNotNull(modelService);
+
+	}
+
+	@Test
+	@Category(org.imixs.workflow.jee.ejb.EntityServiceRemote.class)
+	public void testModelversion() {
+
+		String sModel = modelService.getLatestVersion();
+
+		Assert.assertEquals("1.0.0", sModel);
+
+		Collection<ItemCollection> col = modelService
+				.getActivityEntityListByVersion(10, sModel);
+
+		Assert.assertTrue(col.size() > 0);
+
+	}
+
+}

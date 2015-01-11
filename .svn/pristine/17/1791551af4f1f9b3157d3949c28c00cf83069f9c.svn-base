@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Imixs Web Tools">
+   
+	<skin>
+		<groupId>org.imixs.workflow</groupId>
+		<artifactId>imixs-workflow-maven-skin</artifactId>
+		<version>0.0.4</version>
+	</skin>
+  
+ 
+  <body>
+    <links>
+      <item name="Home" href="http://www.imixs.org/" />
+ 
+    </links>
+
+
+    <menu name="General">
+      <item name="About" href="index.html"/>
+   
+    </menu>
+
+ 
+ 	
+
+
+  </body>
+ 
+</project>

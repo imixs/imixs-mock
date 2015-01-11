@@ -1,8 +1,10 @@
 package org.imixs.workflow.jee.ejb;
 
 import java.util.List;
+import java.util.Vector;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,7 +35,6 @@ import org.junit.experimental.categories.Category;
  */
 public class TestEntityService extends AbstractTestService {
 
-	
 	@Test
 	@Category(org.imixs.workflow.jee.ejb.EntityServiceRemote.class)
 	public void testService() {
@@ -361,6 +362,125 @@ public class TestEntityService extends AbstractTestService {
 		iVersion = itemcol.getItemValueInteger("$Version");
 		logger.info("after load                - $Version=" + iVersion);
 		Assert.assertEquals(new Integer(2), iVersion);
+
+	}
+
+	/**
+	 * Issue #59.
+	 * 
+	 * Szenario:
+	 * 
+	 * 2 workitems. both created in transaction 1, workitem2 points to workitem1
+	 * 
+	 * then in a new transaction workitem2 updated and 2 times saved and
+	 * workitem 1 one time saved
+	 * 
+	 * test the $uniqueidref and type of workitem2
+	 * 
+	 */
+	@Test
+	@Category(org.imixs.workflow.jee.ejb.EntityServiceRemote.class)
+	public void testIssue59() {
+
+		ItemCollection workitem1 = null;
+		ItemCollection workitem2 = null;
+
+		String sUID1 = null;
+		String sUID2 = null;
+
+		Assert.assertNotNull(entityService);
+
+		/* Create workitems */
+
+		em.getTransaction().begin();
+		logger.info("#---Transaction 1 BEGIN ----#");
+
+		try {
+
+			workitem1 = createTestItemCollection(Thread.currentThread()
+					.getStackTrace());
+			String sName = workitem1.getItemValueString("txtName");
+			workitem1.replaceItemValue("_subject", "1st workitem");
+			workitem1.replaceItemValue("type", "workitem");
+			workitem1.replaceItemValue(EntityService.UNIQUEID,
+					WorkflowKernel.generateUniqueID());
+			workitem2 = createTestItemCollection(Thread.currentThread()
+					.getStackTrace());
+
+			workitem2.replaceItemValue("_subject", "1st workitem");
+			workitem2.replaceItemValue("type", "workitemlob");
+			workitem2.replaceItemValue(EntityService.UNIQUEID,
+					WorkflowKernel.generateUniqueID());
+			workitem2.replaceItemValue(EntityService.UNIQUEIDREF,
+					workitem1.getItemValueString(EntityService.UNIQUEID));
+
+			workitem1 = entityService.save(workitem1);
+			workitem2 = entityService.save(workitem2);
+
+		} catch (AccessDeniedException e) {
+
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		em.getTransaction().commit();
+		sUID1 = workitem1.getItemValueString(EntityService.UNIQUEID);
+		removeList.add(sUID1);
+		logger.info("workitem1 UID=" + sUID1);
+		sUID2 = workitem2.getItemValueString(EntityService.UNIQUEID);
+		removeList.add(sUID2);
+		logger.info("workitem2 UID=" + sUID2);
+
+		logger.info("#---Transaction 1 END ----#");
+
+		// 2nd Transaction..
+
+		em.getTransaction().begin();
+		logger.info("#---Transaction 2 BEGIN ----#");
+
+		workitem1 = entityService.load(sUID1);
+		workitem2 = entityService.load(sUID2);
+
+		workitem1.replaceItemValue("somefield", "somedata");
+
+		workitem2.replaceItemValue("type", "workitemlob");
+		workitem2.replaceItemValue(EntityService.UNIQUEIDREF,
+				workitem1.getItemValueString(EntityService.UNIQUEID));
+
+		// save...
+
+		workitem1 = entityService.save(workitem1);
+		workitem2 = entityService.save(workitem2);
+
+		List v1 = workitem2.getItemValue("type");
+		List v2 = workitem2.getItemValue(EntityService.UNIQUEIDREF);
+
+		Assert.assertEquals(1, v1.size());
+		Assert.assertEquals(1, v2.size());
+
+		em.getTransaction().commit();
+		logger.info("#---Transaction 2 END ----#");
+
+		// 3nd Transaction..verify....
+
+		em.getTransaction().begin();
+		logger.info("#---Transaction 3 BEGIN ----#");
+
+		workitem1 = entityService.load(sUID1);
+		workitem2 = entityService.load(sUID2);
+
+		v1 = workitem2.getItemValue("type");
+		v2 = workitem2.getItemValue(EntityService.UNIQUEIDREF);
+
+		Assert.assertEquals(1, v1.size());
+		Assert.assertEquals(1, v2.size());
+
+		Assert.assertEquals(
+				workitem1.getItemValueString(EntityService.UNIQUEID),
+				workitem2.getItemValueString(EntityService.UNIQUEIDREF));
+
+		em.getTransaction().commit();
+		logger.info("#---Transaction 3 END ----#");
 
 	}
 

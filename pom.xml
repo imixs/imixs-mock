@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.imixs.workflow</groupId>
 	<artifactId>imixs-workflow-test</artifactId>
@@ -26,7 +25,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>2.2</version>
+				<version>3.5.1</version>
 				<configuration>
 					<locales>en</locales>
 				</configuration>
@@ -58,31 +57,19 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- GlassFish test environment <dependency> <groupId>org.glassfish.appclient</groupId> 
-			<artifactId>gf-client</artifactId> <version>3.1.1</version> <scope>system</scope> 
-			<systemPath>${glassfish.home}/lib/gf-client.jar</systemPath> </dependency> -->
 
-
-<!--  
-        <dependency>
-            <groupId>org.glassfish.extras</groupId>
-            <artifactId>glassfish-embedded-all</artifactId>
-            <version>3.1.1</version>
-            <scope>runtime</scope>
-        </dependency>
--->
 		<!-- Imixs Workflow core dependencies -->
 		<dependency>
 			<groupId>org.imixs.workflow</groupId>
 			<artifactId>imixs-workflow-engine</artifactId>
-			<version>3.2.0-SNAPSHOT</version>
+			<version>4.4.0</version>
 		</dependency>
 
 		<!-- Apache Lucene -->
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
-			<version>3.0.1</version>
+			<version>7.5.0</version>
 			<scope>provided</scope>
 		</dependency>
 

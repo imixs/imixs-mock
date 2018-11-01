@@ -21,9 +21,7 @@
 			</roles>
 			<timezone>2</timezone>
 		</developer>
-
 	</developers>
-
 
 	<scm>
 		<connection>scm:git:https://github.com/imixs/imixs-mock.git</connection>
@@ -49,6 +47,33 @@
 			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
 		</license>
 	</licenses>
+
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- Dependency Versions -->
+		<org.imixs.workflow.version>4.4.3</org.imixs.workflow.version>
+	</properties>
+
+
+	<repositories>
+		<!-- Sonatype Snapshot repository -->
+		<repository>
+			<id>sonatype-snaptshots</id>
+			<name>Sonatype Snapshot repository</name>
+			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
+		</repository>
+		<!-- Imixs repository -->
+		<repository>
+			<id>imixs-mvn-repo</id>
+			<url>https://raw.githubusercontent.com/imixs/imixs-mvn-repo/master/</url>
+			<snapshots>
+				<enabled>false</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
 
 	<build>
 		<plugins>
@@ -159,15 +184,13 @@
 			<scope>provided</scope>
 		</dependency>
 
-
 		<!-- Imixs Workflow core dependencies -->
 		<dependency>
 			<groupId>org.imixs.workflow</groupId>
 			<artifactId>imixs-workflow-engine</artifactId>
-			<version>4.4.0</version>
+			<version>${org.imixs.workflow.version}</version>
+			<scope>provided</scope>
 		</dependency>
-
-
 
 		<!-- JUnit Tests -->
 		<dependency>
@@ -181,4 +204,16 @@
 			<version>1.9.5</version>
 		</dependency>
 	</dependencies>
+
+	<!-- Distributen Management oss.sonatype.org -->
+	<distributionManagement>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+	</distributionManagement>
 </project>

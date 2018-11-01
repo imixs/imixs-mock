@@ -1,9 +1,28 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.imixs.workflow</groupId>
 	<artifactId>imixs-mock</artifactId>
-	<version>4.4.1-SNAPSHOT</version>
+	<version>4.4.0-SNAPSHOT</version>
 	<name>Imixs-Mock</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- Dependency Versions -->
+		<org.imixs.workflow.version>4.4.3</org.imixs.workflow.version>
+	</properties>
+
+	<description>
+		Imixs-Mock is a testing library for mocking the Imixs Workflow engine.
+	</description>
+
+	<url>https://github.com/imixs/imixs-mock</url>
+	<organization>
+		<name>Imixs Software Solutions GmbH</name>
+		<url>http://www.imixs.com</url>
+	</organization>
+	<inceptionYear>2018</inceptionYear>
 
 	<developers>
 		<developer>
@@ -45,32 +64,6 @@
 			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
 		</license>
 	</licenses>
-
-
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- Dependency Versions -->
-		<org.imixs.workflow.version>4.4.3</org.imixs.workflow.version>
-	</properties>
-
-
-	<repositories>
-		<!-- Sonatype Snapshot repository -->
-		<repository>
-			<id>sonatype-snaptshots</id>
-			<name>Sonatype Snapshot repository</name>
-			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
-		</repository>
-		<!-- Imixs repository -->
-		<repository>
-			<id>imixs-mvn-repo</id>
-			<url>https://raw.githubusercontent.com/imixs/imixs-mvn-repo/master/</url>
-			<snapshots>
-				<enabled>false</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
-	</repositories>
 
 
 	<build>

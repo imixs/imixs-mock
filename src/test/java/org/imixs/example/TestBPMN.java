@@ -52,20 +52,23 @@ public class TestBPMN {
 		when(principal.getName()).thenReturn("manfred");
 
 		Logger.getLogger("org.imixs.workflow.*").setLevel(Level.FINEST);
-		// test only Owner and Rule Plugin
+		// skip mail plugin
 		try {
 			workflowMockEnvironment.getModelService().addModel(new ModelPluginMock(workflowMockEnvironment.getModel(),
-					"org.imixs.workflow.engine.plugins.OwnerPlugin", "org.imixs.workflow.engine.plugins.RulePlugin"));
+					"org.imixs.workflow.engine.plugins.OwnerPlugin", "org.imixs.workflow.engine.plugins.AccessPlugin",
+					"org.imixs.workflow.engine.plugins.HistoryPlugin",
+					"org.imixs.workflow.engine.plugins.ApplicationPlugin",
+					"org.imixs.workflow.engine.plugins.RulePlugin"));
 		} catch (ModelException e) {
 			e.printStackTrace();
 		}
 
-	} 
+	}
 
 	/**
 	 * Simple Test
 	 */
-	@Test 
+	@Test
 	public void testSimple() {
 
 		workitem = new ItemCollection();
@@ -74,12 +77,12 @@ public class TestBPMN {
 
 		try {
 			workitem = workflowMockEnvironment.getWorkflowService().processWorkItem(workitem);
-			
+
 			Assert.assertNotNull(workitem);
 			Assert.assertEquals(1100, workitem.getTaskID());
 			Assert.assertEquals("manfred", workitem.getItemValue("namowner", String.class));
-			
-		} catch (AccessDeniedException | ProcessingErrorException | PluginException | ModelException e) {
+
+		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail();
 		}

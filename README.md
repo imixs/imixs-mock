@@ -62,7 +62,7 @@ In a JUnit Test class you can initialize the Imixs-Workflow Mock environment:
 		.....
 	}
 
-
+You can find a full example of a jUnit Test [here](https://github.com/imixs/imixs-mock/blob/master/src/test/java/org/imixs/example/TestBPMN.java)
 
 ### Test Your Model
 

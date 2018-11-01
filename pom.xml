@@ -178,7 +178,7 @@
 			<groupId>org.imixs.workflow</groupId>
 			<artifactId>imixs-workflow-engine</artifactId>
 			<version>${org.imixs.workflow.version}</version>
-			<scope>provided</scope>
+			
 		</dependency>
 
 		<!-- JUnit Tests -->

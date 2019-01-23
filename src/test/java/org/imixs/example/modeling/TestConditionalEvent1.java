@@ -1,4 +1,4 @@
-package org.imixs.example;
+package org.imixs.example.modeling;
 
 import static org.mockito.Mockito.when;
 
@@ -19,15 +19,17 @@ import org.mockito.MockitoAnnotations;
 import junit.framework.Assert;
 
 /**
- * This is an example of a jUnit Test using the Imixs WorkflowMockEnvironment
+ * This is an example of a jUnit Test testing a conditional event with the Imixs
+ * WorkflowMockEnvironment
  * 
+ * @see issue #299
  * @author rsoika
  */
-public class TestBPMN {
+public class TestConditionalEvent1 {
 	WorkflowMockEnvironment workflowMockEnvironment;
 
-	final static String MODEL_PATH = "/ticket.bpmn";
-	final static String MODEL_VERSION = "ticket-workflow-1.0";
+	final static String MODEL_PATH = "/conditional_event1.bpmn";
+	final static String MODEL_VERSION = "1.0.0";
 
 	ItemCollection workitem = null;
 
@@ -51,32 +53,44 @@ public class TestBPMN {
 		// skip mail plugin
 		try {
 			workflowMockEnvironment.getModelService().addModel(new ModelPluginMock(workflowMockEnvironment.getModel(),
-					"org.imixs.workflow.engine.plugins.OwnerPlugin", "org.imixs.workflow.engine.plugins.AccessPlugin",
-					"org.imixs.workflow.engine.plugins.HistoryPlugin",
-					"org.imixs.workflow.engine.plugins.ApplicationPlugin",
-					"org.imixs.workflow.engine.plugins.RulePlugin"));
+					"org.imixs.workflow.engine.plugins.ApplicationPlugin"));
 		} catch (ModelException e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	/**
-	 * Simple Test
-	 */
 	@Test
-	public void testSimple() {
-
+	public void testSimpleConditionalEvent() {
+		
+		// test _budget > 100
 		workitem = new ItemCollection();
 		workitem.model(MODEL_VERSION).task(1000).event(10);
-		workitem.replaceItemValue("_subject", "Hello World");
+		workitem.replaceItemValue("_budget", 200);
 
 		try {
 			workitem = workflowMockEnvironment.getWorkflowService().processWorkItem(workitem);
 
 			Assert.assertNotNull(workitem);
 			Assert.assertEquals(1100, workitem.getTaskID());
-			Assert.assertEquals("manfred", workitem.getItemValue("namowner", String.class));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Assert.fail();
+		}
+
+		
+		
+		// test _budget < 100
+		workitem = new ItemCollection();
+		workitem.model(MODEL_VERSION).task(1000).event(10);
+		workitem.replaceItemValue("_budget", 50);
+
+		try {
+			workitem = workflowMockEnvironment.getWorkflowService().processWorkItem(workitem);
+
+			Assert.assertNotNull(workitem);
+			Assert.assertEquals(1200, workitem.getTaskID());
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -84,4 +98,5 @@ public class TestBPMN {
 		}
 
 	}
+
 }

@@ -86,7 +86,7 @@ In your test method you simulate a Task and an Event in the following way:
 
 
 
-### Test only specific Plugins
+### Testing Specific Plugins Only
 
 You can overwrite the plug-in list defined by your model to test only specific plug-ins. This can be useful to reduce the complexity in a mock environment
 
@@ -99,7 +99,25 @@ You can overwrite the plug-in list defined by your model to test only specific p
 	} catch (ModelException e) {
 		e.printStackTrace();
 	}
-	
+
+
+### Different Model Locations in Maven
+
+In a Maven multi-module project your models are typical placed outside your java module (e.g. in the parent project). In this case you can define the location of test resources with the following additional configuraition in your pom.xml: 
+
+
+	...
+	<build>
+	  ....
+	  <testResources>
+			<testResource>
+				<directory>${project.basedir}/../src/workflow</directory>
+			</testResource>
+	  </testResources>
+	</build>
+
+With this configuration your bpmn models are loaded from the parent module. 
+
 
 ### Simulate User Login
 

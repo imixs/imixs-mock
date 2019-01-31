@@ -62,13 +62,17 @@ public class WorkflowMockEnvironment {
 	public static final String DEFAULT_MODEL_VERSION = "1.0.0";
 
 	Map<String, ItemCollection> database = null;
+
+	@Spy
 	protected DocumentService documentService;
+	
+	@Spy
 	protected WorkflowService workflowService;
 
 	@Spy
 	protected ModelService modelService;
+	
 	protected SessionContext ctx;
-
 	protected WorkflowContext workflowContext;
 	private BPMNModel model = null;
 

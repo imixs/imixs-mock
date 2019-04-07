@@ -9,19 +9,32 @@ import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.exceptions.ModelException;
 
 /**
- * The ModelPluginMock registers a subset of plugins for a junit test.
+ * This class mocks a BPMNModel so that a custom list of plugins can be
+ * registered independent form the plugins listed in the parsed bpmn model file.
+ * This is useful for JUnit tests, where only some specific Plugins should run
+ * the test.
  * 
- * <code>
  * 
- * </code>
+ * <pre>
+ * {@code
+ *   ...
+ *   MockitoAnnotations.initMocks(this);
+ *   super.setModelPath(MODEL_PATH);
+ *   super.setup();
+ *   this.modelService.addModel(new ModelPluginMock(model, 
+ *                  "org.imixs.marty.plugins.AppoverPlugin",
+ *                  "org.imixs.workflow.plugins.RulePlugin"));
+ *   ....
+ * }
+ * </pre>
  * 
- */ 
+ */
 public class ModelPluginMock extends BPMNModel {
 	BPMNModel internalModel = null;
 	ItemCollection internalDefinition = null;
 	Vector<String> plugins = null;
 
-	/** 
+	/**
 	 * this constructor changes the registered plugins
 	 * 
 	 */

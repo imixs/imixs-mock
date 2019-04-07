@@ -30,7 +30,8 @@ To use the library in your own project just add the following maven dependencies
 		<version>1.9.5</version>
 		<scope>test</scope>
 	</dependency>
-		
+
+**Note:** Take a look into the [Release Notes](RELEASENOTES) to check the compatibility list for your Imixs-Workflow versiion.		
 	
 ## Junit Tests
 

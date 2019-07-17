@@ -53,7 +53,6 @@ public class TestBPMN {
 		// skip mail plugin
 		try {
 			workflowMockEnvironment.getModelService().addModel(new ModelPluginMock(workflowMockEnvironment.getModel(),
-					"org.imixs.workflow.engine.plugins.OwnerPlugin", "org.imixs.workflow.engine.plugins.AccessPlugin",
 					"org.imixs.workflow.engine.plugins.HistoryPlugin",
 					"org.imixs.workflow.engine.plugins.ApplicationPlugin",
 					"org.imixs.workflow.engine.plugins.RulePlugin"));

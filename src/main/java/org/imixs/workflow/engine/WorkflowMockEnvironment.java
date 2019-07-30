@@ -24,7 +24,7 @@ import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNModel;
 import org.imixs.workflow.bpmn.BPMNParser;
-import org.imixs.workflow.engine.adapters.ParticipantAdapter;
+import org.imixs.workflow.engine.adapters.AccessAdapter;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -244,7 +244,7 @@ public class WorkflowMockEnvironment {
 		Mockito.doCallRealMethod().when(workflowService).registerPlugins(Mockito.any(WorkflowKernel.class),
 				Mockito.any(Model.class));
 		Mockito.doCallRealMethod().when(workflowService).registerAdapters(Mockito.any(WorkflowKernel.class));
-		Mockito.doCallRealMethod().when(workflowService).updateWorkitem(Mockito.any(ItemCollection.class));
+		Mockito.doCallRealMethod().when(workflowService).updateMetadata(Mockito.any(ItemCollection.class));
 
 		// register static Adapters: ParticipantAdapter
 		doAnswer(new Answer<Void>() {
@@ -257,7 +257,7 @@ public class WorkflowMockEnvironment {
 					WorkflowKernel workflowKernel = (WorkflowKernel) arguments[0];
 
 					// Spy ParticipantAdapter after construction....
-					ParticipantAdapter participantAdapter = new ParticipantAdapter(workflowService);
+					AccessAdapter participantAdapter = new AccessAdapter(workflowService);
 					workflowKernel.registerAdapter(Mockito.spy(participantAdapter));
 
 				}

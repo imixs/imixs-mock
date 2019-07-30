@@ -3,12 +3,14 @@ package org.imixs.example;
 import static org.mockito.Mockito.when;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.ModelPluginMock;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -55,6 +57,7 @@ public class TestBPMN {
 			workflowMockEnvironment.getModelService().addModel(new ModelPluginMock(workflowMockEnvironment.getModel(),
 					"org.imixs.workflow.engine.plugins.HistoryPlugin",
 					"org.imixs.workflow.engine.plugins.ApplicationPlugin",
+					"org.imixs.workflow.engine.plugins.OwnerPlugin",
 					"org.imixs.workflow.engine.plugins.RulePlugin"));
 		} catch (ModelException e) {
 			e.printStackTrace();
@@ -65,6 +68,7 @@ public class TestBPMN {
 	/**
 	 * Simple Test
 	 */
+	@SuppressWarnings("unchecked")
 	@Test
 	public void testSimple() {
 
@@ -79,6 +83,16 @@ public class TestBPMN {
 			Assert.assertEquals(1100, workitem.getTaskID());
 			Assert.assertEquals("manfred", workitem.getItemValue(OwnerPlugin.OWNER, String.class));
 
+			
+			// test $writeaccess
+			List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
+			Assert.assertTrue(writeAccess.contains("{process:Finance:assist}"));
+			Assert.assertTrue(writeAccess.contains("manfred"));
+			
+			// test $readaccess
+			Assert.assertTrue(workitem.getItemValueString(WorkflowService.READACCESS).isEmpty());
+
+		
 		} catch (Exception e) {
 			e.printStackTrace();
 			Assert.fail();

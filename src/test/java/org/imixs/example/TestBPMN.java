@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.ModelPluginMock;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
-import org.imixs.workflow.engine.WorkflowService;
+import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -77,7 +77,7 @@ public class TestBPMN {
 
 			Assert.assertNotNull(workitem);
 			Assert.assertEquals(1100, workitem.getTaskID());
-			Assert.assertEquals("manfred", workitem.getItemValue(WorkflowService.OWNER, String.class));
+			Assert.assertEquals("manfred", workitem.getItemValue(OwnerPlugin.OWNER, String.class));
 
 		} catch (Exception e) {
 			e.printStackTrace();

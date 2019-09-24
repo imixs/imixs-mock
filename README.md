@@ -1,4 +1,5 @@
 # Imixs-Mock
+[![Build Status](https://travis-ci.org/imixs/imixs-mock.svg?branch=master)](https://travis-ci.org/imixs/imixs-mock)
 
 Imixs-Mock is a testing library for mocking the Imixs Workflow engine.
 

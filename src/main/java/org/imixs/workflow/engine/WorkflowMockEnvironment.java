@@ -31,13 +31,12 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.junit.Before;
+import org.xml.sax.SAXException;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.xml.sax.SAXException;
-
 /**
  * The WorkflowMockEnvironment provides a mocked database environment for jUnit
  * tests. The WorkflowMockEnvironment can be used to test the WorkflowService.

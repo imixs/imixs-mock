@@ -40,8 +40,8 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:https://github.com/imixs/imixs-mock.git</connection>
-		<developerConnection>scm:git:https://github.com/imixs/imixs-mock.git</developerConnection>
+		<connection>scm:git:git@github.com:imixs/imixs-mock.git</connection>
+		<developerConnection>scm:git:git@github.com/imixs/imixs-mock.git</developerConnection>
 		<url>https://github.com/imixs/imixs-mock/</url>
 		<tag>imixs-mock-6.0.0</tag>
 	</scm>

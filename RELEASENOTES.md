@@ -2,6 +2,9 @@
 
 Imixs-Mock should be used with specific version of Imixs-Workflow. The following list shows the compatibility notes:
 
+### 6.0.0
+
+ - Migration to Jakarta EE 10
 
 ### 4.5.5 
  

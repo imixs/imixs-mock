@@ -18,7 +18,7 @@ To use the library in your own project just add the following maven dependencies
 	<dependency>
 		<groupId>org.imixs.workflow</groupId>
 		<artifactId>imixs-mock</artifactId>
-		<version>4.4.1</version>
+		<version>6.0.0</version>
 		<scope>test</scope>
 	</dependency>
 	<!-- JUnit Tests -->

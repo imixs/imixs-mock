@@ -1,126 +1,125 @@
 package org.imixs.workflow.engine;
 
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.Principal;
-import java.text.ParseException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import jakarta.ejb.SessionContext;
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.Model;
 import org.imixs.workflow.ModelManager;
-import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.bpmn.BPMNModel;
-import org.imixs.workflow.bpmn.BPMNParser;
 import org.imixs.workflow.engine.adapters.AccessAdapter;
-import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.imixs.workflow.exceptions.ProcessingErrorException;
-import org.junit.Before;
-import org.xml.sax.SAXException;
+import org.junit.Assert;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
+import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
+
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.inject.Instance;
+
 /**
- * The WorkflowMockEnvironment provides a mocked database environment for jUnit
- * tests. The WorkflowMockEnvironment can be used to test the WorkflowService.
+ * The {@code AbstractWorkflowServiceTest} can be used as a base class for junit
+ * tests to mock the Imixs WorkflowService. The class mocks the WorkflowService
+ * and a workflow environment including the ModelService.
  * 
- * This test class mocks a complete workflow environment without the class
- * WorkflowService
+ * Junit tests can extend the AbstractWorkflowServiceTest to verify specific
+ * method implementations of the workflowService, Plugin classes or Adapters in
+ * a easy way.
+ * <p>
+ * Because this is a abstract base test class we annotate the MockitoSettings
+ * {@link Strictness} to avoid
+ * org.mockito.exceptions.misusing.UnnecessaryStubbingException.
  * 
- * The test class generates a test database with process entities and activity
- * entities which can be accessed from a plug-in or the workflowKernel.
- * 
- * A JUnit Test can save, load and process workitems.
- * 
- * JUnit tests can also manipulate the model by changing entities through
- * calling the methods:
- * 
- * getActivityEntity,setActivityEntity,getProcessEntity,setProcessEntity
- * 
- * 
- * @version 2.0
- * @see AbstractPluginTest, TestWorkflowService, ModelPluginMock
  * @author rsoika
  */
+@MockitoSettings(strictness = Strictness.WARN)
 public class WorkflowMockEnvironment {
-    private final static Logger logger = Logger.getLogger(WorkflowMockEnvironment.class.getName());
-    public static final String DEFAULT_MODEL_VERSION = "1.0.0";
+    protected final static Logger logger = Logger.getLogger(WorkflowMockEnvironment.class.getName());
 
-    Map<String, ItemCollection> database = null;
+    protected Map<String, ItemCollection> database = null;
 
-    @Spy
-    protected DocumentService documentService;
+    @Mock
+    protected DocumentService documentService; // Mock instance
 
-    @Spy
-    protected WorkflowService workflowService;
+    @InjectMocks
+    protected ModelService modelService; // Injects mocks into ModelService
 
-    @Spy
-    protected ModelService modelService;
+    @InjectMocks
+    protected WorkflowService workflowService; // Injects mocks into WorkflowService
 
-    protected SessionContext ctx;
-    protected WorkflowContext workflowContext;
-    private BPMNModel model = null;
+    @InjectMocks
+    protected AccessAdapter accessAdapter;
 
-    private String modelPath = null;// "/bpmn/plugin-test.bpmn";
-
-    public String getModelPath() {
-        return modelPath;
-    }
-
-    public void setModelPath(String modelPath) {
-        this.modelPath = modelPath;
-    }
-
-    public WorkflowContext getWorkflowContext() {
-        return workflowContext;
-    }
-
-    public WorkflowService getWorkflowService() {
-        return workflowService;
-    }
+    protected WorkflowContextMock workflowContext = null;
+    protected List<Adapter> adapterList = new ArrayList<>();
 
     public ModelService getModelService() {
         return modelService;
+    }
+
+    public WorkflowContextMock getWorkflowContext() {
+        return workflowContext;
     }
 
     public DocumentService getDocumentService() {
         return documentService;
     }
 
-    @SuppressWarnings("deprecation")
-    @Before
-    public void setup() throws PluginException, ModelException, AdapterException {
-        MockitoAnnotations.initMocks(this);
-        // setup db
+    public WorkflowService getWorkflowService() {
+        return workflowService;
+    }
+
+    /**
+     * Can be used to register an Adapter before Setup
+     * 
+     * @param adapter
+     */
+    public void registerAdapter(Adapter adapter) {
+        adapterList.add(adapter);
+    }
+
+    /**
+     * The Setup method initializes a mock environment to test the imixs workflow
+     * service. It initializes a in-memory database and a model Service as also a
+     * Session context object.
+     * <p>
+     * You can overwrite this method in a junit test to add additional test
+     * settings.
+     * 
+     * @throws PluginException
+     */
+    public void setUp() throws PluginException {
+
+        // Ensures that @Mock and @InjectMocks annotations are processed
+        MockitoAnnotations.openMocks(this);
+
+        // Set up test environment
         createTestDatabase();
 
-        // mock session context
-        ctx = Mockito.mock(SessionContext.class);
-        // simulate SessionContext ctx.getCallerPrincipal().getName()
-        Principal principal = Mockito.mock(Principal.class);
-        when(principal.getName()).thenReturn("manfred");
-        when(ctx.getCallerPrincipal()).thenReturn(principal);
+        // Link modelService to workflowServiceMock
+        workflowService.modelService = modelService;
+        modelService.modelManager = new ModelManager();
+        Assert.assertNotNull(modelService.getModelManager());
 
-        // mock Entity service
-        documentService = Mockito.mock(DocumentService.class);
-        // Simulate fineProfile("1.0.0") -> entityService.load()...
+        workflowContext = new WorkflowContextMock();
+        workflowService.ctx = workflowContext.getSessionContext();
+
+        // Mock Database Service with a in-memory database...
         when(documentService.load(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
             @Override
             public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
@@ -134,149 +133,68 @@ public class WorkflowMockEnvironment {
                 return result;
             }
         });
-
-        // simulate save() method
-        when(documentService.save(Mockito.any(ItemCollection.class))).thenAnswer(new Answer<ItemCollection>() {
+        when(documentService.save(Mockito.any())).thenAnswer(new Answer<ItemCollection>() {
             @Override
             public ItemCollection answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
-                ItemCollection entity = (ItemCollection) args[0];
-                // test if uniqueid is available
-                if (entity.getUniqueID().isEmpty()) {
-                    entity.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
+                ItemCollection data = (ItemCollection) args[0];
+                if (data != null) {
+                    database.put(data.getUniqueID(), data);
                 }
-                database.put(entity.getItemValueString(WorkflowKernel.UNIQUEID), entity);
-                return entity;
+                return data;
             }
         });
 
-        // Mock modelService (using the @spy) annotation
-        Mockito.doNothing().when(modelService).init();
+        /*
+         * Mock Event<TextEvent>
+         */
+        Event<TextEvent> mockTextEvents = Mockito.mock(Event.class);
+        // Set up behavior for the mock to simulate firing adapters
+        Mockito.doAnswer(invocation -> {
+            TextEvent event = invocation.getArgument(0);
 
-        // load model
-        loadModel();
+            // Create and use the adapters
+            TextItemValueAdapter tiva = new TextItemValueAdapter();
+            TextForEachAdapter tfea = new TextForEachAdapter();
 
-        // Mock modelManager
-        ModelManager modelManager = Mockito.mock(ModelManager.class);
+            // Invoke adapters
+            tfea.onEvent(event);
+            tiva.onEvent(event);
+
+            return null;
+        }).when(mockTextEvents).fire(Mockito.any(TextEvent.class));
+        // Inject the mocked Event<TextEvent> into the workflowService
+        injectMockIntoField(workflowService, "textEvents", mockTextEvents);
+
+        /*
+         * Mock Instance<Adapter> for adapters field
+         */
+
+        // register AccessAdapter Mock
+        registerAdapter(accessAdapter);
+        accessAdapter.setWorkflowService(getWorkflowService());
+
+        @SuppressWarnings("unchecked")
+        Instance<Adapter> mockAdapters = Mockito.mock(Instance.class);
+        // Set up behavior to return adapters from the adapterList
+        when(mockAdapters.iterator()).thenAnswer(invocation -> adapterList.iterator());
+        when(mockAdapters.get()).thenAnswer(invocation -> adapterList.isEmpty() ? null : adapterList.get(0));
+        // Inject the mocked Instance<Adapter> into the workflowService
+        injectMockIntoField(workflowService, "adapters", mockAdapters);
+    }
+
+    /**
+     * Helper method that loads a new model into the ModelService
+     * 
+     * @param modelPath
+     */
+    public void loadBPMNModel(String modelPath) {
         try {
-            when(modelManager.getModel(Mockito.anyString())).thenReturn(this.getModel());
-            when(modelManager.getModelByWorkitem(Mockito.any(ItemCollection.class))).thenReturn(this.getModel());
-        } catch (ModelException e) {
-            e.printStackTrace();
+            BPMNModel model = BPMNModelFactory.read(modelPath);
+            modelService.getModelManager().addModel(model);
+        } catch (BPMNModelException | ModelException e) {
+            Assert.fail(e.getMessage());
         }
-
-        // Mock context
-        workflowContext = Mockito.mock(WorkflowContext.class);
-        when(workflowContext.getModelManager()).thenReturn(modelManager);
-
-        // Mock WorkflowService
-        workflowService = Mockito.mock(WorkflowService.class);
-        workflowService.documentService = documentService;
-        workflowService.ctx = ctx;
-
-        workflowService.modelService = modelService;
-        when(workflowService.getModelManager()).thenReturn(modelService);
-        when(workflowService.getWorkListByRef(Mockito.anyString())).thenAnswer(new Answer<List<ItemCollection>>() {
-            @Override
-            public List<ItemCollection> answer(InvocationOnMock invocation) throws Throwable {
-
-                List<ItemCollection> result = new ArrayList<>();
-                Object[] args = invocation.getArguments();
-                String id = (String) args[0];
-
-                // iterate over all data and return matching workitems.
-                Collection<ItemCollection> allEntities = database.values();
-                for (ItemCollection aentity : allEntities) {
-                    if (aentity.getItemValueString(WorkflowService.UNIQUEIDREF).equals(id)) {
-                        result.add(aentity);
-                    }
-                }
-                return result;
-            }
-        });
-
-        // AdaptText
-        when(workflowService.adaptText(Mockito.anyString(), Mockito.any(ItemCollection.class)))
-                .thenAnswer(new Answer<String>() {
-                    @Override
-                    public String answer(InvocationOnMock invocation) throws Throwable, PluginException {
-
-                        Object[] args = invocation.getArguments();
-                        String text = (String) args[0];
-                        ItemCollection document = (ItemCollection) args[1];
-
-                        TextEvent textEvent = new TextEvent(text, document);
-
-                        TextItemValueAdapter tiva = new TextItemValueAdapter();
-                        tiva.onEvent(textEvent);
-
-                        return textEvent.getText();
-                    }
-                });
-        when(workflowService.adaptTextList(Mockito.anyString(), Mockito.any(ItemCollection.class)))
-                .thenAnswer(new Answer<List<String>>() {
-                    @Override
-                    public List<String> answer(InvocationOnMock invocation) throws Throwable, PluginException {
-
-                        Object[] args = invocation.getArguments();
-                        String text = (String) args[0];
-                        ItemCollection document = (ItemCollection) args[1];
-
-                        TextEvent textEvent = new TextEvent(text, document);
-
-                        TextItemValueAdapter tiva = new TextItemValueAdapter();
-                        tiva.onEvent(textEvent);
-
-                        return textEvent.getTextList();
-                    }
-                });
-
-        when(workflowService.evalNextTask(Mockito.any(ItemCollection.class))).thenCallRealMethod();
-        when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.any(ItemCollection.class)))
-                .thenCallRealMethod();
-        when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.any(ItemCollection.class),
-                Mockito.anyBoolean())).thenCallRealMethod();
-
-        when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.anyString(),
-                Mockito.any(ItemCollection.class))).thenCallRealMethod();
-        when(workflowService.evalWorkflowResult(Mockito.any(ItemCollection.class), Mockito.anyString(),
-                Mockito.any(ItemCollection.class), Mockito.anyBoolean())).thenCallRealMethod();
-
-        when(workflowService.processWorkItem(Mockito.any(ItemCollection.class))).thenCallRealMethod();
-        when(workflowService.getUserName()).thenCallRealMethod();
-        when(workflowService.getWorkItem(Mockito.anyString())).thenCallRealMethod();
-        // mock registerPlugins, registerAdapter, updateWorkitem...
-        Mockito.doCallRealMethod().when(workflowService).registerPlugins(Mockito.any(WorkflowKernel.class),
-                Mockito.any(Model.class));
-        Mockito.doCallRealMethod().when(workflowService).registerAdapters(Mockito.any(WorkflowKernel.class));
-        Mockito.doCallRealMethod().when(workflowService).updateMetadata(Mockito.any(ItemCollection.class));
-
-        // register static Adapters: ParticipantAdapter
-        doAnswer(new Answer<Void>() {
-
-            @Override
-            public Void answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                if (arguments != null && arguments.length == 1 && arguments[0] != null) {
-
-                    WorkflowKernel workflowKernel = (WorkflowKernel) arguments[0];
-
-                    // Spy ParticipantAdapter after construction....
-                    AccessAdapter participantAdapter = new AccessAdapter(workflowService);
-                    workflowKernel.registerAdapter(Mockito.spy(participantAdapter));
-
-                }
-                return null;
-            }
-        }).when(workflowService).registerAdapters(Mockito.any(WorkflowKernel.class));
-
-        try {
-            when(workflowService.getEvents(Mockito.any(ItemCollection.class))).thenCallRealMethod();
-        } catch (ModelException e) {
-
-            e.printStackTrace();
-        }
-
     }
 
     /**
@@ -285,11 +203,8 @@ public class WorkflowMockEnvironment {
     protected void createTestDatabase() {
 
         database = new HashMap<String, ItemCollection>();
-
         ItemCollection entity = null;
-
         logger.info("createSimpleDatabase....");
-
         // create workitems
         for (int i = 1; i < 6; i++) {
             entity = new ItemCollection();
@@ -302,62 +217,24 @@ public class WorkflowMockEnvironment {
             entity.replaceItemValue(DocumentService.ISAUTHOR, true);
             database.put(entity.getItemValueString(WorkflowKernel.UNIQUEID), entity);
         }
-
-    }
-
-    public Model getModel() {
-        return model;
     }
 
     /**
-     * loads a model from the given path
-     * 
-     * @param modelPath
+     * Helper method to inject a mock into a private/protected field using
+     * reflection.
+     *
+     * @param targetObject The object into which the field is to be injected.
+     * @param fieldName    The name of the field to inject.
+     * @param value        The mock or object to inject into the field.
      */
-    public void loadModel(String modelPath) {
-        setModelPath(modelPath);
-        loadModel();
-    }
-
-    /**
-     * loads the current model
-     */
-    public void loadModel() {
-        if (this.modelPath != null) {
-            long lLoadTime = System.currentTimeMillis();
-            InputStream inputStream = WorkflowMockEnvironment.class.getResourceAsStream(this.modelPath);
-            try {
-                logger.info("loading model: " + this.modelPath + "....");
-                model = BPMNParser.parseModel(inputStream, "UTF-8");
-
-                this.modelService.addModel(model);
-                logger.fine("...loadModel processing time=" + (System.currentTimeMillis() - lLoadTime) + "ms");
-            } catch (ModelException | ParseException | ParserConfigurationException | SAXException | IOException e) {
-                e.printStackTrace();
-            }
-
+    public void injectMockIntoField(Object targetObject, String fieldName, Object value) {
+        try {
+            Field field = targetObject.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(targetObject, value);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException("Failed to inject mock into field: " + fieldName, e);
         }
-
     }
 
-    public Map<String, ItemCollection> getDatabase() {
-        return database;
-    }
-
-    /**
-     * Mocks a processing life cycle
-     * 
-     * @param workitem
-     * @return
-     * @throws ModelException
-     * @throws PluginException
-     * @throws ProcessingErrorException
-     * @throws AccessDeniedException
-     * @throws AdapterException
-     */
-    public ItemCollection processWorkItem(ItemCollection workitem)
-            throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException, AdapterException {
-        workitem = workflowService.processWorkItem(workitem);
-        return workitem;
-    }
 }

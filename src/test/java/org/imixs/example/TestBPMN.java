@@ -47,7 +47,7 @@ public class TestBPMN {
 			workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 
 			Assert.assertNotNull(workitem);
-			Assert.assertEquals(1100, workitem.getTaskID());
+			Assert.assertEquals(11001, workitem.getTaskID());
 
 			// test $readaccess
 			Assert.assertTrue(workitem.getItemValueString(WorkflowService.READACCESS).isEmpty());

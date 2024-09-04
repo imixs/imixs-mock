@@ -1,5 +1,7 @@
 package org.imixs.workflow.engine;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -16,7 +18,6 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.adapters.AccessAdapter;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -114,7 +115,7 @@ public class WorkflowMockEnvironment {
         // Link modelService to workflowServiceMock
         workflowService.modelService = modelService;
         modelService.modelManager = new ModelManager();
-        Assert.assertNotNull(modelService.getModelManager());
+        assertNotNull(modelService.getModelManager());
 
         workflowContext = new WorkflowContextMock();
         workflowService.ctx = workflowContext.getSessionContext();
@@ -193,7 +194,7 @@ public class WorkflowMockEnvironment {
             BPMNModel model = BPMNModelFactory.read(modelPath);
             modelService.getModelManager().addModel(model);
         } catch (BPMNModelException | ModelException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 

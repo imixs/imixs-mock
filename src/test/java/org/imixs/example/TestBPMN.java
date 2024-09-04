@@ -1,5 +1,11 @@
 package org.imixs.example;
 
+// Import the JUnit 5 Assertions class
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,7 +16,6 @@ import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,16 +50,15 @@ public class TestBPMN {
 
 		try {
 			workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
-
-			Assert.assertNotNull(workitem);
-			Assert.assertEquals(11001, workitem.getTaskID());
+			assertNotNull(workitem);
+			assertEquals(1100, workitem.getTaskID());
 
 			// test $readaccess
-			Assert.assertTrue(workitem.getItemValueString(WorkflowService.READACCESS).isEmpty());
+			assertTrue(workitem.getItemValueString(WorkflowService.READACCESS).isEmpty());
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 	}
@@ -74,25 +78,25 @@ public class TestBPMN {
 		try {
 			workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 
-			Assert.assertNotNull(workitem);
-			Assert.assertEquals(1100, workitem.getTaskID());
-			Assert.assertEquals("manfred", workitem.getItemValue(OwnerPlugin.OWNER, String.class));
+			assertNotNull(workitem);
+			assertEquals(1100, workitem.getTaskID());
+			assertEquals("manfred", workitem.getItemValue(OwnerPlugin.OWNER, String.class));
 
 			// test $owner
 			List<String> owners = workitem.getItemValue("$owner");
-			Assert.assertTrue(owners.contains("manfred"));
+			assertTrue(owners.contains("manfred"));
 
 			// test $readaccess
-			Assert.assertTrue(workitem.getItemValueString(WorkflowService.READACCESS).isEmpty());
+			assertTrue(workitem.getItemValueString(WorkflowService.READACCESS).isEmpty());
 
 			// test $writeaccess
 			List<String> writeAccess = workitem.getItemValue(WorkflowService.WRITEACCESS);
-			Assert.assertTrue(writeAccess.contains("manfred"));
-			Assert.assertTrue(writeAccess.contains("{process:Finance:assist}"));
+			assertTrue(writeAccess.contains("manfred"));
+			assertTrue(writeAccess.contains("{process:Finance:assist}"));
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 	}

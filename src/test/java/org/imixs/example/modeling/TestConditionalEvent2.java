@@ -1,5 +1,9 @@
 package org.imixs.example.modeling;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -7,7 +11,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -46,15 +49,14 @@ public class TestConditionalEvent2 {
 			// in this case the budget will be computed by a business rule (RulePlugin)
 			workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 
-			Assert.assertNotNull(workitem);
+			assertNotNull(workitem);
 			// test budget
-			Assert.assertEquals(500, workitem.getItemValueInteger("_budget"));
+			assertEquals(500, workitem.getItemValueInteger("_budget"));
 			// test conditional event
-			Assert.assertEquals(1100, workitem.getTaskID());
+			assertEquals(1100, workitem.getTaskID());
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail();
+			fail(e.getMessage());
 		}
 
 	}

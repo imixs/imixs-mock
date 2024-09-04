@@ -1,5 +1,9 @@
 package org.imixs.example.modeling;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -7,7 +11,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.WorkflowMockEnvironment;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,12 +46,12 @@ public class TestConditionalEvent1 {
 		try {
 			workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 
-			Assert.assertNotNull(workitem);
-			Assert.assertEquals(1100, workitem.getTaskID());
+			assertNotNull(workitem);
+			assertEquals(1100, workitem.getTaskID());
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			Assert.fail(e.getMessage());
+			fail(e.getMessage());
 		}
 
 		// test _budget < 100
@@ -59,12 +62,11 @@ public class TestConditionalEvent1 {
 		try {
 			workitem = workflowEnvironment.getWorkflowService().processWorkItem(workitem);
 
-			Assert.assertNotNull(workitem);
-			Assert.assertEquals(1200, workitem.getTaskID());
+			assertNotNull(workitem);
+			assertEquals(1200, workitem.getTaskID());
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			Assert.fail();
+			fail(e.getMessage());
 		}
 
 	}

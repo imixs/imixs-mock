@@ -10,7 +10,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- Dependency Versions -->
-		<org.imixs.workflow.version>6.1.0-SNAPSHOT</org.imixs.workflow.version>
+		<org.imixs.workflow.version>6.1.1</org.imixs.workflow.version>
 		<mockito.version>5.8.0</mockito.version>
 		<jakarta.version>10.0.0</jakarta.version>
 		<junit.jupiter.version>5.9.2</junit.jupiter.version>

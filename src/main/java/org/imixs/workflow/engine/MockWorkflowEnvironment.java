@@ -1,10 +1,25 @@
+/****************************************************************************
+ * Copyright (c) 2022-2025 Imixs Software Solutions GmbH and others.
+ * https://www.imixs.com
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License v. 2.0 which is available at
+ * https://www.eclipse.org/legal/epl-2.0
+ *
+ * This Source Code may also be made available under the terms of the
+ * GNU General Public License, version 2 or later (GPL-2.0-or-later),
+ * which is available at https://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-or-later
+ ****************************************************************************/
+
 package org.imixs.workflow.engine;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,8 +29,9 @@ import java.util.logging.Logger;
 import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
+import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.adapters.AccessAdapter;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.mockito.InjectMocks;
@@ -30,17 +46,18 @@ import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
 
+import jakarta.ejb.SessionContext;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Instance;
 
 /**
- * The {@code AbstractWorkflowServiceTest} can be used as a base class for junit
- * tests to mock the Imixs WorkflowService. The class mocks the WorkflowService
- * and a workflow environment including the ModelService.
- * 
- * Junit tests can extend the AbstractWorkflowServiceTest to verify specific
- * method implementations of the workflowService, Plugin classes or Adapters in
- * a easy way.
+ * The {@code MockWorkflowEnvironment} can be used as a base class for junit
+ * tests to mock the Imixs WorkflowService, WorkflowContextService and
+ * ModelService.
+ * <p>
+ * Junit tests can instantiate this class to verify specific method
+ * implementations of the workflowService, Plugin classes or Adapters in a easy
+ * way.
  * <p>
  * Because this is a abstract base test class we annotate the MockitoSettings
  * {@link Strictness} to avoid
@@ -49,9 +66,10 @@ import jakarta.enterprise.inject.Instance;
  * @author rsoika
  */
 @MockitoSettings(strictness = Strictness.WARN)
-public class WorkflowMockEnvironment {
-    protected final static Logger logger = Logger.getLogger(WorkflowMockEnvironment.class.getName());
+public class MockWorkflowEnvironment {
+    protected final static Logger logger = Logger.getLogger(MockWorkflowEnvironment.class.getName());
 
+    protected SessionContext sessionContext = null;
     protected Map<String, ItemCollection> database = null;
 
     @Mock
@@ -63,36 +81,10 @@ public class WorkflowMockEnvironment {
     @InjectMocks
     protected WorkflowService workflowService; // Injects mocks into WorkflowService
 
-    @InjectMocks
-    protected AccessAdapter accessAdapter;
-
-    protected WorkflowContextMock workflowContext = null;
     protected List<Adapter> adapterList = new ArrayList<>();
+    protected List<Plugin> pluginList = new ArrayList<>();
 
-    public ModelService getModelService() {
-        return modelService;
-    }
-
-    public WorkflowContextMock getWorkflowContext() {
-        return workflowContext;
-    }
-
-    public DocumentService getDocumentService() {
-        return documentService;
-    }
-
-    public WorkflowService getWorkflowService() {
-        return workflowService;
-    }
-
-    /**
-     * Can be used to register an Adapter before Setup
-     * 
-     * @param adapter
-     */
-    public void registerAdapter(Adapter adapter) {
-        adapterList.add(adapter);
-    }
+    protected ModelManager modelManager = null;
 
     /**
      * The Setup method initializes a mock environment to test the imixs workflow
@@ -105,20 +97,20 @@ public class WorkflowMockEnvironment {
      * @throws PluginException
      */
     public void setUp() throws PluginException {
-
         // Ensures that @Mock and @InjectMocks annotations are processed
         MockitoAnnotations.openMocks(this);
 
         // Set up test environment
         createTestDatabase();
 
+        sessionContext = Mockito.mock(SessionContext.class);
+        setupSessionContext();
+
         // Link modelService to workflowServiceMock
         workflowService.modelService = modelService;
-        modelService.modelManager = new ModelManager();
-        assertNotNull(modelService.getModelManager());
 
-        workflowContext = new WorkflowContextMock();
-        workflowService.ctx = workflowContext.getSessionContext();
+        modelManager = new ModelManager(workflowService);
+        workflowService.ctx = sessionContext;
 
         // Mock Database Service with a in-memory database...
         when(documentService.load(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
@@ -170,11 +162,6 @@ public class WorkflowMockEnvironment {
         /*
          * Mock Instance<Adapter> for adapters field
          */
-
-        // register AccessAdapter Mock
-        registerAdapter(accessAdapter);
-        accessAdapter.setWorkflowService(getWorkflowService());
-
         @SuppressWarnings("unchecked")
         Instance<Adapter> mockAdapters = Mockito.mock(Instance.class);
         // Set up behavior to return adapters from the adapterList
@@ -182,19 +169,70 @@ public class WorkflowMockEnvironment {
         when(mockAdapters.get()).thenAnswer(invocation -> adapterList.isEmpty() ? null : adapterList.get(0));
         // Inject the mocked Instance<Adapter> into the workflowService
         injectMockIntoField(workflowService, "adapters", mockAdapters);
+
+    }
+
+    public ModelManager getModelManager() {
+        return modelManager;
+    }
+
+    public ModelService getModelService() {
+        return modelService;
+    }
+
+    public DocumentService getDocumentService() {
+        return documentService;
+    }
+
+    public WorkflowService getWorkflowService() {
+        return workflowService;
     }
 
     /**
-     * Helper method that loads a new model into the ModelService
+     * Can be used to register an Adapter before Setup
+     * 
+     * @param adapter
+     */
+    public void registerAdapter(Adapter adapter) {
+        adapterList.add(adapter);
+    }
+
+    /**
+     * Can be used to register an plugin before Setup
+     * 
+     * @param adapter
+     * @throws PluginException
+     */
+    public void registerPlugin(Plugin plugin) throws PluginException {
+        pluginList.add(plugin);
+        plugin.init(workflowService);
+    }
+
+    /**
+     * Helper method to load a model from internal cache (not thread save)
+     * 
+     * @param version
+     * @return
+     * @throws ModelException
+     */
+    public BPMNModel fetchModel(String version) throws ModelException {
+        return modelService.getBPMNModel(version);
+    }
+
+    /**
+     * Loads a new model
      * 
      * @param modelPath
      */
-    public void loadBPMNModel(String modelPath) {
+    public void loadBPMNModelFromFile(String modelPath) {
+
         try {
             BPMNModel model = BPMNModelFactory.read(modelPath);
-            modelService.getModelManager().addModel(model);
-        } catch (BPMNModelException | ModelException e) {
-            fail(e.getMessage());
+            modelService.addModelData(BPMNUtil.getVersion(model), model, null);
+
+        } catch (BPMNModelException e) {
+            e.printStackTrace();
+            fail();
         }
     }
 
@@ -236,6 +274,15 @@ public class WorkflowMockEnvironment {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException("Failed to inject mock into field: " + fieldName, e);
         }
+    }
+
+    /**
+     * Creates a Mock for a Session Context with a test principal 'manfred'
+     */
+    private void setupSessionContext() {
+        Principal principal = Mockito.mock(Principal.class);
+        when(principal.getName()).thenReturn("manfred");
+        when(sessionContext.getCallerPrincipal()).thenReturn(principal);
     }
 
 }

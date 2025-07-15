@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,18 +27,18 @@ public class TestConditionalEvent2 {
 
 	protected ItemCollection workitem;
 	protected ItemCollection event;
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 		Logger.getLogger("org.imixs.workflow.*").setLevel(Level.FINEST);
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
 	}
 
 	@Test
 	public void testSimpleConditionalEvent() {
-		workflowEnvironment.loadBPMNModel("/bpmn/conditional_event2.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/conditional_event2.bpmn");
 
 		// test _budget > 100
 		workitem = new ItemCollection();

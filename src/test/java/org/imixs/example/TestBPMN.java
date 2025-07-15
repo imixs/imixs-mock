@@ -11,30 +11,47 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
+import org.imixs.workflow.engine.adapters.AccessAdapter;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
 
 /**
  * This is an example of a jUnit Test using the Imixs WorkflowMockEnvironment
  * 
  * @author rsoika
  */
+// @ExtendWith(MockitoExtension.class)
+// @MockitoSettings(strictness = Strictness.WARN)
 public class TestBPMN {
 
 	protected ItemCollection workitem;
 	protected ItemCollection event;
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
+
+	@InjectMocks
+	protected AccessAdapter accessAdapter;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
+		// Ensures that @Mock and @InjectMocks annotations are processed
+		MockitoAnnotations.openMocks(this);
 		Logger.getLogger("org.imixs.workflow.*").setLevel(Level.FINEST);
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
+
+		// Setup Environment
 		workflowEnvironment.setUp();
+
+		// register AccessAdapter Mock
+		workflowEnvironment.registerAdapter(accessAdapter);
+		accessAdapter.setWorkflowService(workflowEnvironment.getWorkflowService());
+
 	}
 
 	/**
@@ -42,7 +59,7 @@ public class TestBPMN {
 	 */
 	@Test
 	public void testBasic() {
-		workflowEnvironment.loadBPMNModel("/bpmn/basic.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/basic.bpmn");
 
 		workitem = new ItemCollection();
 		workitem.model("1.0.0").task(1000).event(10);
@@ -69,7 +86,7 @@ public class TestBPMN {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testBasicOwner() {
-		workflowEnvironment.loadBPMNModel("/bpmn/basic_owner.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/basic_owner.bpmn");
 
 		workitem = new ItemCollection();
 		workitem.model("1.0.0").task(1000).event(10);

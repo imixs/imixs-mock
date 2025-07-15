@@ -1,14 +1,16 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.imixs.workflow</groupId>
 	<artifactId>imixs-mock</artifactId>
-	<version>6.1.1-SNAPSHOT</version>
+	<version>6.2.0-SNAPSHOT</version>
 	<name>Imixs-Mock</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- Dependency Versions -->
-		<org.imixs.workflow.version>6.1.1</org.imixs.workflow.version>
+		<org.imixs.workflow.version>6.2.3-SNAPSHOT</org.imixs.workflow.version>
 		<mockito.version>5.8.0</mockito.version>
 		<jakarta.version>10.0.0</jakarta.version>
 		<junit.jupiter.version>5.9.2</junit.jupiter.version>
@@ -69,8 +71,12 @@
 	<!-- Support Snapshot Repos -->
 	<repositories>
 		<repository>
-			<id>maven-snapshots</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<id>central-portal-snapshots</id>
+			<name>Central Portal Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -87,9 +93,30 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-					<source>11</source>
-					<target>11</target>
+					<source>17</source>
+					<target>17</target>
 				</configuration>
+			</plugin>
+			<!-- License -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<archive>
+						<addMavenDescriptor>true</addMavenDescriptor>
+						<manifestEntries>
+							<Bundle-License>
+								https://www.imixs.org/license.html</Bundle-License>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<!-- Testing JUnit 5 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.22.2</version>
 			</plugin>
 
 			<!-- release management -->
@@ -104,31 +131,19 @@
 					<goals>deploy</goals>
 				</configuration>
 			</plugin>
-			<!-- release to Maven central -->
-			<plugin>
-				<groupId>org.sonatype.plugins</groupId>
-				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.13</version>
-				<extensions>true</extensions>
-				<configuration>
-					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-					<autoReleaseAfterClose>true</autoReleaseAfterClose>
-					<stagingProgressTimeoutMinutes>15</stagingProgressTimeoutMinutes>
-				</configuration>
-			</plugin>
 
-			<!--  maven site, doc and reporting -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
 				<version>3.12.1</version>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
 				<version>3.1.0</version>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
@@ -137,6 +152,7 @@
 					<additionalOptions>-Xdoclint:none</additionalOptions>
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
@@ -156,13 +172,6 @@
 				</configuration>
 			</plugin>
 
-
-			<!-- Testing JUnit 5 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.2</version>
-			</plugin>
 
 		</plugins>
 	</build>
@@ -187,12 +196,27 @@
 	</reporting>
 
 	<profiles>
-		<!-- Activate using the release property -->
+
+		<!-- Profile for Releases -->
 		<profile>
 			<id>release</id>
 			<build>
 				<plugins>
-					<!-- To generate javadoc -->
+					<!-- for RELEASES: Central Publishing Plugin -->
+					<plugin>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>0.8.0</version>
+						<extensions>true</extensions>
+						<configuration>
+							<publishingServerId>central</publishingServerId>
+							<autoPublish>true</autoPublish>
+							<waitUntil>published</waitUntil>
+						</configuration>
+					</plugin>
+
+
+					<!-- Source Plugin -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-source-plugin</artifactId>
@@ -206,6 +230,8 @@
 							</execution>
 						</executions>
 					</plugin>
+
+					<!-- Javadoc Plugin -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
@@ -223,11 +249,11 @@
 						</executions>
 					</plugin>
 
-					<!-- To sign the artifacts -->
+					<!-- GPG Signing Plugin -->
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.6</version>
+						<version>3.1.0</version>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>
@@ -243,7 +269,9 @@
 		</profile>
 	</profiles>
 
+
 	<dependencies>
+
 		<!-- Jakarta EE -->
 		<dependency>
 			<groupId>jakarta.platform</groupId>
@@ -306,15 +334,15 @@
 	</dependencies>
 
 
-	<!-- Distributen Management oss.sonatype.org -->
+	<!-- Distribution Management central.sonatype.org -->
 	<distributionManagement>
 		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<id>central</id>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
 		</snapshotRepository>
 		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+			<id>central</id>
+			<url>https://central.sonatype.com</url>
 		</repository>
 	</distributionManagement>
 

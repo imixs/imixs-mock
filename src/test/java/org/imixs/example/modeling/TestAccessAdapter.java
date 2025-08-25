@@ -71,14 +71,14 @@ public class TestAccessAdapter {
 		workflowEnvironment.setUp();
 		workflowEnvironment.registerPlugin(ownerPlugin);
 
-		// register AccessAdapter Mock
+		// register Adapter classes
 		workflowEnvironment.registerAdapter(accessAdapter);
-
+		accessAdapter.setWorkflowService(workflowEnvironment.getWorkflowService());
+		// register Plugins
 		assertNotNull(ownerPlugin.getWorkflowService());
 
 		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestAccessPlugin.bpmn");
 		model = workflowEnvironment.getModelManager().getModel("1.0.0");
-		accessAdapter.setWorkflowService(workflowEnvironment.getWorkflowService());
 
 		// prepare data
 		workitem = new ItemCollection().model("1.0.0").task(100);

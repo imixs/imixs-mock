@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.imixs.workflow</groupId>
 	<artifactId>imixs-mock</artifactId>
-	<version>6.2.0</version>
+	<version>6.2.1-SNAPSHOT</version>
 	<name>Imixs-Mock</name>
 
 	<properties>
@@ -46,7 +46,7 @@
 		<connection>scm:git:git@github.com:imixs/imixs-mock.git</connection>
 		<developerConnection>scm:git:git@github.com:imixs/imixs-mock.git</developerConnection>
 		<url>https://github.com/imixs/imixs-mock/</url>
-		<tag>imixs-mock-6.2.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
